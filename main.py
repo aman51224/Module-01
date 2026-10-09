@@ -1,37 +1,58 @@
-print("\n*****Tip Calculator*****\n")
-
-total_bill = float(input("Enter the total amount: "))
-number_of_people = int(input("\nEnter the number of people: "))
-tip_rate = input("\nEnter the tip rate in percentage, press Enter for default(10%): ")
-
-if tip_rate == "":
-    tip_rate = 10
-else:
-    tip_rate = float(tip_rate)
-
-tip_rate = tip_rate / 100
-
-print()
-
-def split_bill(total, people, tip_rate=0.10):
-    personal_share = (total + (total * tip_rate)) / people
-    return personal_share
+import io
 
 
-people = []
+#Reading file
 
-count = number_of_people
-start = 1
+def write_to_dictionary(file_path):
+    customers = {}
+    try:
+        with open(file_path, "r") as transaction_file:
+            for line in transaction_file:
+                customer_name, total = line.strip().split(",")
 
-print("Please enter the names of the people\n")
+                if customer_name in customers:
+                    customers[customer_name] += float(total)
+                else:
+                    customers[customer_name] = float(total)
 
-while count > 0:
-    names = input(f"{start} Enter the name : ")
-    people.append(names)
-    count -= 1
-    start += 1
+    except FileNotFoundError:
+        print("FileNotFoundError: the file does not exist")
+    else:
+        print("File read successfully")
+    finally:
+        print("Operation Done")
+    return customers
 
-print()
 
-for person in people:
-    print(f"{person} needs to pay {split_bill(total_bill, number_of_people, tip_rate):.2f} Birr")
+def sort_dictionary(unsorted_dictionary):
+    sorted_dictionary = dict(sorted(unsorted_dictionary.items(), key=lambda item: item[1], reverse=True))
+    return sorted_dictionary
+
+def generate_report(customer_data):
+    try:
+        with open("report.txt", "w") as report_file:
+            report_file.write(f"*****Customer Report*****\n\n")
+            report_file.write(f"No  Name    Total amount per person\n")
+            number_of_customers = len(customer_data)
+            total_amount = 0
+            count = 1
+            for customer, amount in customer_data.items():    
+                report_file.write(f"{count}  {customer}    {amount}\n")
+                total_amount += amount
+                count += 1
+            
+            report_file.write(f"\nNumber of customers : {number_of_customers}")
+            report_file.write(f"\nTotal transaction: {total_amount}")
+
+    except io.UnsupportedOperation:
+        print("io.UnsupportedOperation: No write access")
+    else:
+        print("Write operation successful")
+    finally:
+        print("Operation Done")
+
+
+customer_dict = write_to_dictionary("transactions.txt")
+sorted_customer_dict = sort_dictionary(customer_dict)
+generate_report(sorted_customer_dict)
+
