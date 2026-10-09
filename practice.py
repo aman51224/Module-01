@@ -1,100 +1,75 @@
-#Exercises
+#Book Class
 
-import io
+print("****Book Class****\n")
+class Book:
+    def __init__(self,title, author, pages):
+        self.title = title
+        self.author = author
+        self.pages = pages
+    def describe(self):
+        print(f"A book with title {self.title}, author {self.author} and number of pages {self.pages}")
 
-#Unique cities
-cities = ["Addis Ababa", "Bahir Dar", "Hawassa", "Ambo", "Mekelle", "Asosa", 
-            "Arba Minch", "Harrar", "Gondor", "Adama", "Addis Ababa", "Hawassa", 
-            "Hawassa", "Arba Minch", "Gondor", "Semera", "Gambella city", "Ambo", "Mekelle"]
+biology = Book("Microbiology", "Abebe", 572)
+math = Book("Calculus", "Kebede", 359)
 
+biology.describe()
+math.describe()
 
-unique_cities = set(cities)
-print("\n*****Unique Cities*****")
-print("\nThe unique cities from the list of cities are:\n")
+#Product Class, Private attribute and Validate
+print("\n****Product Class****\n")
+class Product:
+    def __init__(self, name, price, quantity):
+        self.name = name
+        self.price = price
+        self.__quantity = quantity
 
-for city in unique_cities:
-    print(city)
+    @property
+    def quantity(self):
+        return self.__quantity
 
-print(f"\nNumber of unique cities: {len(unique_cities)}")
+    def restock(self, quantity):
+        if quantity < 0:
+            print("Negative numbers are not allowed")
+        else:
+            self.__quantity = self.quantity + quantity
+    def sell(self, quantity):
+        if quantity < 0:
+            print("Negative numbers are not allowed")
+        elif self.quantity - quantity < 0:
+            print(f"Trying to sell {quantity} apples, available {self.quantity}") # when we use self.quantity we are using the getter method
+        else:                                                                     # which returns self.__quantity attribute
+            self.__quantity = self.quantity - quantity
 
+apple = Product("Apple", 800, 5)   
+orange = Product("Orange", 200, 15)
+banana = Product("Banana", 300, 10)
 
-#Price Report
-print("\n*****Price Report*****\n")
-grocery_items = {"Sugar":500, "Potatoes":300, "tea":134, "tomatoes":140, "meat":950}
+print(apple.name)
+print(orange.name)
+print(banana.name)
 
-for items,price in grocery_items.items():
-    print(f"{items}: {price}")
+print()
 
+orange.name = "Avocado"
 
-#Tax Comprehension
-prices = [100, 250, 400, 80]
-#15% tax
-price_with_tax = [p * 1.15 for p in prices]
-
-#Cheap Items
-cheap = [p for p in prices if p < 200]
-
-
-#Write and Read
-print("\n*****Write and Read*****\n")
-file_path = "names.txt"
-try:
-    with open(file_path, "w") as name_file:
-        name_file.write("Abebe,Kebede,Almaz") #If space is added between names, it will show when you write to the file
-
-except io.UnsupportedOperation:
-    print("UnsupportedOperation: No write access")
-else:
-    print("Data written successfully")
-finally:
-    print("Operation Done")
-
-names = []
-
-
-try:
-    with open(file_path, "r") as read_file:
-        for line in read_file:
-            name = line.strip().split(",")
-        names = name
-except FileNotFoundError:
-    print("FileNotFoundError: File does not exist")
-else:
-    print("File read successfully")
-finally:
-    print("Operation Done")
+print(apple.name)
+print(orange.name)
+print(banana.name)
 
 
-try:
-    with open(file_path, "w") as write_file:
-        for name in names:
-            write_file.write(f"{name}\n")
-except io.UnsupportedOperation:
-     print("UnsupportedOperation: No write access")
-else:
-    print("Data written successfully")
-finally:
-    print("Operation Done")
-
-
-
-#Safe Division
-print("\n*****Safe Division*****\n")
-dividend = 1000
-while True:
-    try:
-        divisor = float(input("Give a number to divide 1000: "))
-        print(f"{dividend} divided by {divisor} is {dividend / divisor}")
-    except ValueError:
-        print("Please enter a numeric value")
-    except ZeroDivisionError:
-        print("Division by zero error. Please enter another number")
-    else:
-        break
+print(apple.quantity)               
+apple.sell(3)
+print(apple.quantity)
+apple.restock(10)
+print(apple.quantity)
+apple.sell(20)
+print(apple.quantity)
+apple.sell(-2)
+apple.restock(-5)
+apple.sell(12)
+print(apple.quantity)
 
 
 
 
-
-
-
+        

@@ -1,77 +1,54 @@
-#Pharmacy Inventory Tracker
+#Account Management System
 
-import io
+class Account:
+    def __init__(self, owner, account_number, balance = 0):
+        self.owner = owner
+        self.account_number = account_number
+        self.__balance = balance
 
+    @property
+    def balance(self):
+        return self.__balance
 
-print("\n*****Pharmacy Inventory Tracker*****\n")
-
-stock = {}
-file_path = "stock.txt"
-
-try:
-    with open(file_path, "r") as stock_file:
-        for line in stock_file:
-            item, quantity = line.strip().split(",")
-            stock[item] = int(quantity)
-except FileNotFoundError:
-    print("FileNotFoundError: File does not exist")
-else:
-    print("Data read successfully")
-finally:
-    print("Operation Done")
-
-def adjust_quantity(item, amount):
-    if stock.get(item) == None:
+    def deposite(self, amount):
         if amount <= 0:
-            print(f"Decreasing {-amount} unit(s) from nonexistent item:{item}")
+            raise ValueError("Amount must be positive")
+        self.__balance += amount  #If we had a setter method as well and it was like this: self.balance = self.balance + amount it means
+                                                                                 #then calls the setter method second =  calls the getter method first + amount(adds amount)
+    def withdraw(self, amount):
+        if amount <= 0:
+            raise ValueError("Amount must be positive")
+        elif self.balance < amount:
+            raise ValueError("Balance not sufficient")
         else:
-            stock[item] = stock.get(item, 0) + amount
-    elif amount < 0:
-        if stock[item] + amount < 0:
-            print(f"Insufficient stock! Available stock for {item}:{stock[item]} Requested: {-amount}")
-        else:
-            stock[item] = stock[item] + amount
-    else:    
-        stock[item] = stock[item] + amount
+            self.__balance -= amount
 
-low_stock_threshold = 10
+    def statement(self):
+        print(f"Owner {self.owner} with account number {self.account_number} has balance {self.balance} ETB")
 
-def print_low_stock():
-    # low = []
-    # for item, quantity in stock.items(): # both this for loop and the list comprehension are functionally identical
-    #     if quantity < low_stock_threshold:
-    #         low.append(item)
-    
-    low = [item for item, quantity in stock.items() if quantity < low_stock_threshold]
 
-    print("\nItems with low quantity(below 10)\n")
-    for item in low:
-        print(f"{item}")
-    print()
 
-def update_file():
-    try:
-        with open(file_path, "w") as update_stock_file:
-            for item, quantity in stock.items():
-                update_stock_file.write(f"{item},{quantity}\n")
-
-    except io.UnsupportedOperation:
-        print("UnsupportedOperation: No write access")
-    else:
-        print("Data written successfully")
-    finally:
-        print("Operation Done")
-
-print("\nBefore adjusting")
-print_low_stock()
-adjust_quantity("Paracetamol", -5)
-adjust_quantity("Toothbrush", -10)
-adjust_quantity("Ibuprofen", 3)
-adjust_quantity("Ibuprofen", -9)
-adjust_quantity("Aspirin", -5)
-adjust_quantity("Vitamin C", 6)
-adjust_quantity("Sanitizer", 3)
-
-print("\nAfter Adjusting")
-print_low_stock()
-update_file()
+account1 = Account("Abebe", "123456", 2500)
+account1.statement()
+account1.deposite(150)
+account1.statement()
+account1.withdraw(700.5)
+account1.statement()
+print()
+print(account1.balance)
+# account1.balance = 2645
+print(account1.balance)
+account1.statement()
+account1.__balance = 1500
+account1.statement()
+# account1.deposite(-200)
+# account1.statement()
+# account1.withdraw(-55)
+# account1.statement()
+account1.withdraw(2351)
+print()
+account2 = Account("Kebede", "789012", 3455)
+account2.deposite(10)
+account1.statement()
+account2.statement()
+        
