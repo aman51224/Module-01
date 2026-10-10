@@ -1,10 +1,13 @@
 #Account Management System
 
+from abc import ABC, abstractmethod
+
 class Account:
     def __init__(self, owner, account_number, balance = 0):
         self.owner = owner
         self.account_number = account_number
         self.__balance = balance
+        self._observers = []
 
     @property
     def balance(self):
@@ -15,12 +18,26 @@ class Account:
     def _change_balance(self, amount):
         self.__balance += amount
 
+    def subscribe(self,observer):
+        self._observers.append(observer)
+
+
+    def _notify(self, event):
+        for observer in self._observers:
+            observer.update(event)
+
     def deposite(self, amount):
         if amount <= 0:
             raise ValueError("Amount must be positive")
         self._change_balance(amount)
+        self._notify(f"Deposited {amount} ETB")
 
+    #Template pattern to separate business logic from notification
     def withdraw(self, amount):
+        self._do_withdraw(amount)
+        self._notify(f"Withdrew {amount} ETB")
+
+    def _do_withdraw(self, amount):
         if amount <= 0:
             raise ValueError("Amount must be positive")
         elif self.balance < amount:
@@ -52,7 +69,7 @@ class CurrentAccount(Account):
         self.overdraft_limit = overdraft
 
 
-    def withdraw(self, amount):
+    def _do_withdraw(self, amount):
         if amount <= 0:
             raise ValueError("Amount must be positive")
         elif self.balance < amount and abs(self.balance - amount) > self.overdraft_limit:
@@ -63,26 +80,63 @@ class CurrentAccount(Account):
     def statement(self):
         print(f"Current Account: {self.owner} with account number {self.account_number} and an overdraft limit of {self.overdraft_limit} has balance {self.balance} ETB\n")
 
-account1 = Account("Abebe", "29485", 1800)
-account2 = Account("Kebede", "12957", 2300)
-savingsAccount1 = SavingsAccount("Almaz", "12345", 2000)
-savingsAccount2 = SavingsAccount("Lemlem", "56789", 3545, 0.1)
-currentAccount1 = CurrentAccount("Dawit", "34567", 2510)
-currentAccount2 = CurrentAccount("Abeje", "13467", 3200, 1500)
 
-account_list = [account1, account2, savingsAccount1, savingsAccount2, currentAccount1, currentAccount2]
 
-savingsAccount1.statement()
-savingsAccount1.deposite(500)
-savingsAccount1.statement()
-savingsAccount1.withdraw(130)
-savingsAccount1.statement()
-currentAccount1.deposite(300)
-currentAccount2.statement()
-currentAccount2.withdraw(4000)
-currentAccount2.statement()
-print("\n\n")
+class AlertService(ABC):
+    @abstractmethod
+    def update(self, event): ...
 
-for account in account_list:
-    account.statement()
+class SMSAlertService(AlertService):
+    def update(self, event):
+        print(f"[SMS notification] {event}")
+
+
+class AccountFactory:
+    @staticmethod
+    def create(kind, owner, account_number, balance=0, rate=0.05, overdraft=1000):
+        if kind == "Savings":
+            return SavingsAccount(owner, account_number, balance, rate)
+        elif kind == "Current":
+            return CurrentAccount(owner, account_number, balance, overdraft)
+        raise ValueError(f"{kind} type is unknown")
+        
+
+
+abebe = AccountFactory.create("Savings", "Abebe", "12345", 2530)
+kebede = AccountFactory.create("Current", "Kebede", "67890", 3400)
+
+# abebe.subscribe(SMSAlertService())
+# abebe.statement()
+# abebe.deposite(100)
+# abebe.statement()
+# abebe.withdraw(500)
+# abebe.statement()
+
+# kebede.subscribe(SMSAlertService())
+# kebede.statement()
+# kebede.deposite(170)
+# kebede.statement()
+# kebede.withdraw(890)
+# kebede.statement()
+
+almaz = AccountFactory.create("Savings", "Almaz", "10293", 3560, 0.1)
+lemlem = AccountFactory.create("Current", "Lemlem", "68275", 4240, 0, 1500)
+
+
+almaz.subscribe(SMSAlertService())
+almaz.statement()
+almaz.deposite(100)
+almaz.statement()
+almaz.withdraw(500)
+almaz.statement()
+
+lemlem.subscribe(SMSAlertService())
+lemlem.statement()
+lemlem.deposite(100)
+lemlem.statement()
+lemlem.withdraw(500)
+lemlem.statement()
+lemlem.withdraw(5338)
+lemlem.statement()
+
 
