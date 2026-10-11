@@ -1,48 +1,29 @@
-from collections import deque
-import time
+#1 Recursive Sum
+print("\nRecursive Sum\n")
 
+numbers = [1, 2, 13, 4, 6, 7, 10, 8]
 
-#1 Name the Big-O
-print("\n***Big-O***\n")
-#List index
-print("\n***List Index***\n")
-#It has O(1) time complexity since we do not have to search the entire list
-numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-print(numbers[3])
+def total(nums):
+    if not nums:
+        return 0
+    sum = nums[0] + total(nums[1:])
+    return sum
 
-#Single loop
-print("\n***Single Loop***\n")
-#It has O(n) time complexity since have to loop over each item in the list, if there are n
-#items, we have to loop n times
-numbers1 = [1, 2, 3, 4, 5]
-for index, number in enumerate(numbers1):
-    numbers1[index] = number + 1
-print(numbers1)
+print(f"Sum of elements of the list {numbers} = {total(numbers)}")
 print()
 
+def count_down(n):
+    if n < 1:
+        return
+    print(n)
+    count_down(n - 1)
 
+count_down(21)
 
-#Nested loop
-print("\n***Nested Loop***\n")
-#It has O(n^2) time complexity since for each outer loop that loops length of the list times
-# the inner loop also loops the same number of times.
-numbers2 = [1, 2, 3, 4, 5, 6]
-for i in range(len(numbers2)):
-    for j in range(len(numbers2)):
-        print(numbers2[i] * numbers2[j])
+#2 Binary search
+print("\nBinary Search\n")
+items = [1, 3, 23, 45, 46, 52, 60, 77, 89]
 
-print()
-
-#Dictionary lookup
-print("\n***Dictionary Lookup***\n")
-#It has O(1) time complexity because dictionaries use a hash function
-#that maps the key to where the value is actually located like a list index
-fruits = {"apple":1, "orange":2, "banana":3}
-print(f"\"apple\":{fruits["apple"]}")
-
-#Binary search
-print("\n***Binary Search***\n")
-#It has O(logn) time complexity because after each iteration the search range is halved
 def binary_search(number_list, target):
     left = 0
     right = len(number_list) - 1
@@ -51,161 +32,86 @@ def binary_search(number_list, target):
     while(left <= right):
         middle = left + ((right - left) // 2)
         if number_list[middle] == target:
-            print(f"Found {target} in list")
-            break
+            return middle
         elif number_list[middle] < target:
             left = middle + 1
         elif number_list[middle] > target:
             right = middle - 1
+    return -1
 
-binary_search(numbers, 2)
-
-
-#2 List vs Dict lookup
-print("\n***List vs Dictionary lookup***\n")
-account_number_list = []
-for i in range(1,100001):
-    account_number_list.append(i)
-
-account_number_dict = {}
-for i in range(1, 100001):
-    account_number_dict.setdefault(i, i)
-
-target = 95766
-
-start_time_dict = time.perf_counter()
-if target in account_number_dict:
-    print(f"{target} found in dict")
-end_time_dict = time.perf_counter()
-
-start_time_list = time.perf_counter()
-if target in account_number_list:
-    print(f"{target} found in list")
-end_time_list = time.perf_counter()
-
-execution_time_list = end_time_list - start_time_list
-execution_time_dict = end_time_dict - start_time_dict
-
-print(f"Searching list took {execution_time_list:.6f} seconds")
-print(f"Searching dictionary took {execution_time_dict:.6f} seconds ")
+print(f"Index returned from binary search = {binary_search(items, 1)}")
 
 
-#3 Build a stack
-print("\n***Stack***\n")
-class Stack:
-    def __init__(self):
-        self.max_size = 20
-        self.__stack = []
+#3 Merge Sort
+print("\nMerge Sort\n")
 
-    def isEmpty(self):
-        if len(self.__stack) == 0:
-            return True
-        return False
+unsorted_items = [123, 21, 2, 1, 67, 4, 34, 120, 100, 4, 38]
 
-
-    def push(self, item):
-        if len(self.__stack) < self.max_size:
-            self.__stack.append(item)
-        else:
-            print("Stack is full")
-
-    def pop(self):
-        if self.__stack:
-            return self.__stack.pop()
-        else:
-            print("Stack is empty")
+def merge_sort(items):
+    if len(items) <= 1:
+        return items
     
-    def peek(self):
-        if self.__stack:
-            return self.__stack[-1]
+    middle = len(items) // 2
+    left = items[:middle]
+    right = items[middle:]
+
+    left_item = merge_sort(left)
+    right_item = merge_sort(right)
+
+    return merge(left_item, right_item)
+
+def merge(left, right):
+    i = j = 0
+    sorted_items = []
+
+    while i < len(left) and j < len(right):
+        if left[i] < right[j]:
+            sorted_items.append(left[i])
+            i += 1
         else:
-            print("Stack is empty")
+            sorted_items.append(right[j])
+            j += 1
+
+    sorted_items.extend(left[i:])
+    sorted_items.extend(right[j:])
+
+    return sorted_items
+
+print(f"After calling merge sort:{merge_sort(unsorted_items)}")
+
+sorted_items = sorted(unsorted_items)
+print(f"After calling sorted(): {sorted_items}")
+
+#4 Sort with a key
+print("\nSort with a key\n")
+
+list_of_tuples = [("Abebe", 2350), ("Kebede", 1438), ("Almaz", 1678), ("Lemlem", 1260)]
+sorted_list_of_tuples = sorted(list_of_tuples, key=lambda a:a[1], reverse=True)
+print(f"Sorted list of tuples by balance in descending order :{sorted_list_of_tuples}")
 
 
-names = ["Abebe", "Kebede", "Almaz", "Lemlem", "Dawit", "Beletu", "Abeje"]
-print("List of names")
-print(names)
-name_stack = Stack()
+#5 Two Pointers
+print("\nTwo Pointers\n")
+sorted_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
 
-for name in names:
-    name_stack.push(name)
+def has_pair(nums, target):
+    left = 0
+    right = len(nums) - 1
 
-print(f"Top element of stack:{name_stack.peek()}")
-
-reversed_names = []
-
-while not name_stack.isEmpty():
-    reversed_names.append(name_stack.pop())
-print("Names in reverse order")
-print(reversed_names)
-
-
-#4 Build a queue
-print("\n***Queue***\n")
-class BankQueue:
-    def __init__(self):
-        self.max_size = 20
-        self.__queue = deque()
-
-    def isEmpty(self):
-        if len(self.__queue) == 0:
-            return True
-        return False
-
-    def enqueue(self, item):
-        if len(self.__queue) < self.max_size:
-            self.__queue.append(item)
+    while(left < right):
+        if nums[left] + nums[right] == target:
+            return f"{nums[left]} + {nums[right]} = {target}"
+        elif nums[left] + nums[right] < target:
+            left += 1
         else:
-            print("Queue is full")
-
-    def dequeue(self):
-        if self.__queue:
-            return self.__queue.popleft()
-        else:
-            print("Queue is empty")
-
-
-bank_line = BankQueue()
-
-bank_line.enqueue("Abebe")
-bank_line.enqueue("Kebede")
-bank_line.enqueue("Almaz")
-bank_line.enqueue("Lemlem")
-bank_line.enqueue("Beletu")
-
-while not bank_line.isEmpty():
-    print(f"{bank_line.dequeue()} has been served")
-
-
-#5 Singly Linked List
-print("\n***Singly Linked List***\n")
-class Node:
-    def __init__(self, data):
-        self.data = data
-        self.next = None
-
-class LinkedList:
-    def __init__(self):
-        self.head = None
+            right -= 1
+    return f"No pair was found that adds up to {target}"
     
-    def push_front(self, node):
-        new_node = node
-        new_node.next = self.head
-        self.head = new_node
 
-    def print_all(self):
-        pointer = self.head
-        while True:
-            if pointer == None:
-                break
-            print(pointer.data)
-            pointer = pointer.next
+print(has_pair(sorted_list, 0))
+        
 
-abebe = Node("Abebe")
-kebede = Node("Kebede")
-almaz = Node("Almaz")
-linked_list = LinkedList()
-linked_list.push_front(abebe)
-linked_list.push_front(kebede)
-linked_list.push_front(almaz)
-linked_list.print_all()
+
+
+
+    
