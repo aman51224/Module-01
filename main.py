@@ -101,42 +101,147 @@ class AccountFactory:
         raise ValueError(f"{kind} type is unknown")
         
 
+class AccountRegistry:
+    def __init__(self):
+        self.by_number = {}
+        self.order = []
+        self.transactions = {}
+
+    def add(self, account):
+        if account.account_number not in self.by_number:
+            self.by_number[account.account_number] = account
+            self.order.append(account.account_number)
+        else:
+            print(f"Account with account number {account.account_number} already exists")
+
+    def find(self, account_number):
+        return self.by_number.get(account_number)
+
+    def list_all(self):
+        accounts = []
+        for account_number in self.order:
+            if account_number in self.by_number:
+                accounts.append(self.by_number[account_number])
+        return accounts
+
+    def push_transaction(self, account_number, transaction_type, amount):
+        account = self.find(account_number)
+        if account != None:
+            if amount > 0:
+                if self.transactions.get(account_number) == None:
+                    self.transactions[account_number] = []
+                transaction_tuple = (transaction_type, amount)
+                self.transactions[account_number].append(transaction_tuple)
+            else:
+                print("Amount must be positive")
+        else:
+            print(f"Account with account number {account_number} does not exist")
+
+    
+    def undo_last(self, account_number):
+        account = self.find(account_number)
+        if account != None:
+            transaction_list = self.transactions.get(account_number)
+            if transaction_list:
+                latest_transaction = transaction_list.pop()
+                if latest_transaction[0] == "Deposit":
+                    account.withdraw(latest_transaction[1])
+                    print(f"{latest_transaction[0]} has been undone")
+                elif latest_transaction[0] == "Withdraw":
+                    account.deposite(latest_transaction[1])
+                    print(f"{latest_transaction[0]} has been undone")
+                else:
+                    print(f"{latest_transaction[0]} is unknown")
+            else:
+                print("Stack is empty")
+        else:
+            print(f"Account with account number {account_number} does not exist")
+           
+
+
+
+
 
 abebe = AccountFactory.create("Savings", "Abebe", "12345", 2530)
 kebede = AccountFactory.create("Current", "Kebede", "67890", 3400)
 
-# abebe.subscribe(SMSAlertService())
-# abebe.statement()
-# abebe.deposite(100)
-# abebe.statement()
-# abebe.withdraw(500)
-# abebe.statement()
-
-# kebede.subscribe(SMSAlertService())
-# kebede.statement()
-# kebede.deposite(170)
-# kebede.statement()
-# kebede.withdraw(890)
-# kebede.statement()
-
-almaz = AccountFactory.create("Savings", "Almaz", "10293", 3560, 0.1)
-lemlem = AccountFactory.create("Current", "Lemlem", "68275", 4240, 0, 1500)
+account_registry = AccountRegistry()
+account_registry.add(abebe)
+account_registry.add(kebede)
+accounts = account_registry.list_all()
 
 
-almaz.subscribe(SMSAlertService())
-almaz.statement()
-almaz.deposite(100)
-almaz.statement()
-almaz.withdraw(500)
-almaz.statement()
+returned_account = account_registry.find("12345") if account_registry.find("12345") != None else ValueError("Account does not exist")
+returned_account.statement()
+returned_account.subscribe(SMSAlertService())
 
-lemlem.subscribe(SMSAlertService())
-lemlem.statement()
-lemlem.deposite(100)
-lemlem.statement()
-lemlem.withdraw(500)
-lemlem.statement()
-lemlem.withdraw(5338)
-lemlem.statement()
+returned_account.deposite(250)
+account_registry.push_transaction("12345", "Deposit", 250)
+returned_account.statement()
+
+returned_account.deposite(100)
+account_registry.push_transaction("12345", "Deposit", 100)
+returned_account.statement()
+
+returned_account.deposite(1400)
+account_registry.push_transaction("12345","Deposit", 1400)
+returned_account.statement()
+
+returned_account.withdraw(350)
+account_registry.push_transaction("12345","Withdraw", 350)
+returned_account.statement()
+
+returned_account.withdraw(500)
+account_registry.push_transaction("12345","Withdraw", 500)
+returned_account.statement()
+
+account_registry.undo_last("12345")
+returned_account.statement()
+
+account_registry.undo_last("12345")
+returned_account.statement()
+
+
+
+
+returned_account2 = account_registry.find("67890") if account_registry.find("67890") != None else ValueError("Account does not exist")
+returned_account2.statement()
+returned_account2.subscribe(SMSAlertService())
+
+returned_account2.deposite(250)
+account_registry.push_transaction("67890", "Deposit", 250)
+returned_account2.statement()
+
+returned_account2.deposite(100)
+account_registry.push_transaction("67890", "Deposit", 100)
+returned_account2.statement()
+
+returned_account2.deposite(1400)
+account_registry.push_transaction("67890","Deposit", 1400)
+returned_account2.statement()
+
+returned_account2.withdraw(350)
+account_registry.push_transaction("67890","Withdraw", 350)
+returned_account2.statement()
+
+returned_account2.withdraw(500)
+account_registry.push_transaction("67890","Withdraw", 500)
+returned_account2.statement()
+
+account_registry.undo_last("67890")
+returned_account2.statement()
+
+account_registry.undo_last("67890")
+returned_account2.statement()
+
+returned_account2.withdraw(6100)
+account_registry.push_transaction("67890","Withdraw", 6100)
+returned_account2.statement()
+
+account_registry.undo_last("67890")
+returned_account2.statement()
+
+
+
 
 

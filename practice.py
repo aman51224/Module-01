@@ -1,236 +1,211 @@
-#SRP
-import io
-from abc import ABC, abstractmethod
-
-print("\nSRP\n")
-# class Report:
-#     def __init__(self):
-#         self.file_path = "Report.txt"
-#         self.report_list = [["Abebe","2025",3.2],["Kebede","2025",3.5],["Almaz","2025",3.4],["Lemlem","2025",3.6]]
-
-#     def build_report(self):
-#         print("*****Student Report*****\n")
-#         for list in self.report_list:
-#             print(f"Name:{list[0]} Academic year:{list[1]} CGPA:{list[2]}\n")
-
-#     def save_report(self):
-#         try:
-#             with open(self.file_path, "a") as report_file:
-#                 for list in self.report_list:
-#                     report_file.write(f"{list[0]} {list[1]} {list[2]}\n")
-#         except io.UnsupportedOperation:
-#             print("UnsupportedOperation: No write access")
-#         else:
-#             print("Data written successfully")
-
-#     def email_report(self, recipient_address):
-#         sender = "abebe@gmail.com"
-#         print(f"\nFrom:{sender}")
-#         print(f"To:{recipient_address}")
-#         print("Subject: Student Report\n")
-
-#         try:
-#             with open(self.file_path, "r") as report_file:
-#                 for line in report_file:
-#                     print(line)
-#         except FileNotFoundError:
-#             print("FileNotFoundError: File does not exist")
-#         else:
-#             print("Email sent successfully")
+from collections import deque
+import time
 
 
-report_list = [["Abebe","2025",3.2],["Kebede","2025",3.5],["Almaz","2025",3.4],["Lemlem","2025",3.6]]
+#1 Name the Big-O
+print("\n***Big-O***\n")
+#List index
+print("\n***List Index***\n")
+#It has O(1) time complexity since we do not have to search the entire list
+numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+print(numbers[3])
 
-class BuildReport:
-    def build_report(self):
-        print("*****Student Report*****\n")
-        for list in report_list:
-            print(f"Name:{list[0]} Academic year:{list[1]} CGPA:{list[2]}\n")
-
-
-class SaveReport:
-    def __init__(self):
-        self.file_path = "Report.txt"
-
-    def save_report(self):
-        try:
-            with open(self.file_path, "a") as report_file:
-                for list in report_list:
-                    report_file.write(f"{list[0]} {list[1]} {list[2]}\n")
-        except io.UnsupportedOperation:
-            print("UnsupportedOperation: No write access")
-        else:
-            print("Data saved successfully")
-
-
-class EmailReport:
-    def __init__(self, recipient_address):
-        self.recipient_address = recipient_address
-        self.file_path = "Report.txt"
-
-
-    def email_report(self):
-        sender = "abebe@gmail.com"
-        print(f"\nFrom:{sender}")
-        print(f"To:{self.recipient_address}")
-        print("Subject: Student Report\n")
-
-        try:
-            with open(self.file_path, "r") as report_file:
-                for line in report_file:
-                    print(line)
-        except FileNotFoundError:
-            print("FileNotFoundError: File does not exist")
-        else:
-            print("Email sent successfully\n")
-
-
-
-# student_report = Report()
-# student_report.build_report()
-# student_report.save_report()
-# student_report.email_report("sew@gmail.com")
-
-build = BuildReport()
-build.build_report()
-save = SaveReport()
-save.save_report()
-email = EmailReport("person@gmail.com")
-email.email_report()
-
-print("\nOCP\n")
-#OCP
-# def print_area(shape_type, length, width=0):
-#     if shape_type == "Circle":
-#         print(f"Area of circle:{3.14159265 * length * length}")
-#     elif shape_type == "Square":
-#         print(f"Area of square:{length * length}")
-#     elif shape_type == "Triangle":
-#         print(f"Area of triangle:{(length * width) / 2}")
-#     else:
-#         print(f"Area calculation for {shape_type} is not supported")
-
-# print_area("Circle", 4)
-# print_area("Square",5)
-# print_area("Triangle",9,7)
-# print_area("Rectangle",4, 17)
-
-class Shape(ABC):
-    @abstractmethod
-    def calculate_area(self):
-        pass
-
-class Circle(Shape):
-    PI = 3.14159265
-    def __init__(self, radius):
-        self.radius = radius
-
-    def calculate_area(self):
-        area = Circle.PI * self.radius * self.radius
-        print(f"Area of Circle:{area}")
-
-class Square(Shape):
-    def __init__(self, side_length):
-        self.side_length = side_length
-
-    def calculate_area(self):
-        area = self.side_length * self.side_length
-        print(f"Area of Square:{area}")
-
-class Triangle(Shape):
-    def __init__(self, base, height):
-        self.base = base
-        self.height = height
-
-    def calculate_area(self):
-        area = (self.base * self.height) / 2
-        print(f"Area of Triangle:{area}")
-
-
-circle = Circle(23)
-circle.calculate_area()
-square = Square(16)
-square.calculate_area()
-triangle = Triangle(34, 61)
-triangle.calculate_area()
-
-
-#Singleton
-print("\nSingleton\n")
+#Single loop
+print("\n***Single Loop***\n")
+#It has O(n) time complexity since have to loop over each item in the list, if there are n
+#items, we have to loop n times
+numbers1 = [1, 2, 3, 4, 5]
+for index, number in enumerate(numbers1):
+    numbers1[index] = number + 1
+print(numbers1)
 print()
-class AppSettings:
-    _instance = None
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance.currency = "ETB"
-        return cls._instance
-    
-app_settings1 = AppSettings()
-print(app_settings1.currency)
-app_settings2= AppSettings()
-
-print(app_settings1 is app_settings2)
-
-#Factory
-print("\nFactory\n")
-class ShapeFactory:
-    @staticmethod
-    def create(kind, length1, length2=0):
-        if kind == "Circle":
-            return Circle(length1)
-        elif kind == "Square":
-            return Square(length1)
-        elif kind == "Triangle":
-            return Triangle(length1, length2)
-        raise ValueError(f"Unknown kind:{kind}")
 
 
-fcircle = ShapeFactory.create("Circle", 42)
-fcircle.calculate_area()
 
-fsquare = ShapeFactory.create("Square", 11)
-fsquare.calculate_area()
+#Nested loop
+print("\n***Nested Loop***\n")
+#It has O(n^2) time complexity since for each outer loop that loops length of the list times
+# the inner loop also loops the same number of times.
+numbers2 = [1, 2, 3, 4, 5, 6]
+for i in range(len(numbers2)):
+    for j in range(len(numbers2)):
+        print(numbers2[i] * numbers2[j])
 
-ftriangle = ShapeFactory.create("Triangle", 13, 5)
-ftriangle.calculate_area()
+print()
+
+#Dictionary lookup
+print("\n***Dictionary Lookup***\n")
+#It has O(1) time complexity because dictionaries use a hash function
+#that maps the key to where the value is actually located like a list index
+fruits = {"apple":1, "orange":2, "banana":3}
+print(f"\"apple\":{fruits["apple"]}")
+
+#Binary search
+print("\n***Binary Search***\n")
+#It has O(logn) time complexity because after each iteration the search range is halved
+def binary_search(number_list, target):
+    left = 0
+    right = len(number_list) - 1
+    middle = 0
+
+    while(left <= right):
+        middle = left + ((right - left) // 2)
+        if number_list[middle] == target:
+            print(f"Found {target} in list")
+            break
+        elif number_list[middle] < target:
+            left = middle + 1
+        elif number_list[middle] > target:
+            right = middle - 1
+
+binary_search(numbers, 2)
 
 
-#Observer
-print("\nObserver\n")
+#2 List vs Dict lookup
+print("\n***List vs Dictionary lookup***\n")
+account_number_list = []
+for i in range(1,100001):
+    account_number_list.append(i)
 
-class NewsAgency:
+account_number_dict = {}
+for i in range(1, 100001):
+    account_number_dict.setdefault(i, i)
+
+target = 95766
+
+start_time_dict = time.perf_counter()
+if target in account_number_dict:
+    print(f"{target} found in dict")
+end_time_dict = time.perf_counter()
+
+start_time_list = time.perf_counter()
+if target in account_number_list:
+    print(f"{target} found in list")
+end_time_list = time.perf_counter()
+
+execution_time_list = end_time_list - start_time_list
+execution_time_dict = end_time_dict - start_time_dict
+
+print(f"Searching list took {execution_time_list:.6f} seconds")
+print(f"Searching dictionary took {execution_time_dict:.6f} seconds ")
+
+
+#3 Build a stack
+print("\n***Stack***\n")
+class Stack:
     def __init__(self):
-        self._observers = []
+        self.max_size = 20
+        self.__stack = []
 
-    def broadcast_news(self, news):
-        self._notify(news)
-
-    def subscribe(self,observer):
-        self._observers.append(observer)
-
-    def _notify(self, event):
-        for observer in self._observers:
-            observer.update(event)
-
-class RadioListener:
-    def update(self,event):
-        print(f"On the Radio:{event}")  
-
-class TvViewer:
-    def update(self, event):
-        print(f"On Television:{event}")
+    def isEmpty(self):
+        if len(self.__stack) == 0:
+            return True
+        return False
 
 
-ebc = NewsAgency()
-abebe = RadioListener()
-kebede = TvViewer()
+    def push(self, item):
+        if len(self.__stack) < self.max_size:
+            self.__stack.append(item)
+        else:
+            print("Stack is full")
 
-ebc.subscribe(abebe)
-ebc.subscribe(kebede)
-ebc.subscribe(RadioListener())
-ebc.subscribe(TvViewer())
-ebc.broadcast_news("Breaking News")
-
-
+    def pop(self):
+        if self.__stack:
+            return self.__stack.pop()
+        else:
+            print("Stack is empty")
     
+    def peek(self):
+        if self.__stack:
+            return self.__stack[-1]
+        else:
+            print("Stack is empty")
+
+
+names = ["Abebe", "Kebede", "Almaz", "Lemlem", "Dawit", "Beletu", "Abeje"]
+print("List of names")
+print(names)
+name_stack = Stack()
+
+for name in names:
+    name_stack.push(name)
+
+print(f"Top element of stack:{name_stack.peek()}")
+
+reversed_names = []
+
+while not name_stack.isEmpty():
+    reversed_names.append(name_stack.pop())
+print("Names in reverse order")
+print(reversed_names)
+
+
+#4 Build a queue
+print("\n***Queue***\n")
+class BankQueue:
+    def __init__(self):
+        self.max_size = 20
+        self.__queue = deque()
+
+    def isEmpty(self):
+        if len(self.__queue) == 0:
+            return True
+        return False
+
+    def enqueue(self, item):
+        if len(self.__queue) < self.max_size:
+            self.__queue.append(item)
+        else:
+            print("Queue is full")
+
+    def dequeue(self):
+        if self.__queue:
+            return self.__queue.popleft()
+        else:
+            print("Queue is empty")
+
+
+bank_line = BankQueue()
+
+bank_line.enqueue("Abebe")
+bank_line.enqueue("Kebede")
+bank_line.enqueue("Almaz")
+bank_line.enqueue("Lemlem")
+bank_line.enqueue("Beletu")
+
+while not bank_line.isEmpty():
+    print(f"{bank_line.dequeue()} has been served")
+
+
+#5 Singly Linked List
+print("\n***Singly Linked List***\n")
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
+
+class LinkedList:
+    def __init__(self):
+        self.head = None
+    
+    def push_front(self, node):
+        new_node = node
+        new_node.next = self.head
+        self.head = new_node
+
+    def print_all(self):
+        pointer = self.head
+        while True:
+            if pointer == None:
+                break
+            print(pointer.data)
+            pointer = pointer.next
+
+abebe = Node("Abebe")
+kebede = Node("Kebede")
+almaz = Node("Almaz")
+linked_list = LinkedList()
+linked_list.push_front(abebe)
+linked_list.push_front(kebede)
+linked_list.push_front(almaz)
+linked_list.print_all()
