@@ -1,6 +1,7 @@
 #Account Management System
 
 from abc import ABC, abstractmethod
+from collections import deque
 
 class BankConfig:
     _instance = None
@@ -41,7 +42,7 @@ class Account:
         for observer in self._observers:
             observer.update(event)
 
-    def deposite(self, amount):
+    def deposit(self, amount):
         if amount <= 0:
             raise ValueError("Amount must be positive")
         self._change_balance(amount)
@@ -73,7 +74,7 @@ class SavingsAccount(Account):
         self.rate = rate if rate is not None else config.interest_rate
 
     def add_interest(self):
-        self.deposite(self.balance * self.rate)
+        self.deposit(self.balance * self.rate)
 
     def statement(self):
         print(f"Savings Account: {self.owner} with account number {self.account_number} and interest rate of {self.rate} has balance {self.balance} ETB\n")
@@ -143,6 +144,7 @@ class AccountRegistry:
     def find(self, account_number):
         return self.__by_number.get(account_number)
 
+
     def list_all(self):
         accounts = []
         for account_number in self.__order:
@@ -180,7 +182,7 @@ class AccountRegistry:
                     account.withdraw(latest_transaction)
                     print("Deposit has been undone")
                 elif latest_transaction < 0:
-                    account.deposite(-latest_transaction)
+                    account.deposit(-latest_transaction)
                     print("Withdraw has been undone")
             else:
                 print("Stack is empty")
@@ -231,208 +233,152 @@ class AccountRegistry:
 
 
 
+class Branch:
+    def __init__(self, name):
+        self.name = name
+        self.children = []
+        self.accounts = []
+        self.__transfers = {}
+
+    def add_branch(self, branch):
+        if type(branch) is Branch:
+            self.children.append(branch)
+        else:
+            print(f"{branch} is not a branch")
+
+    def add_account(self, registry, account_number):
+        account = registry.find(account_number)
+        if isinstance(account, Account):
+            self.accounts.append(account)
+        else:
+            print(f"{account} is not an account")
+
+    def total_balance(self):
+        total = sum(a.balance for a in self.accounts)
+        for child in self.children:
+            total += child.total_balance()
+        return total
+
+    def transfer_to(self, registry, sender_account_number, recipient_account_number, amount):
+        if sender_account_number != recipient_account_number:
+            sender = registry.find(sender_account_number)
+            recipient = registry.find(recipient_account_number)
+            if sender != None and recipient != None:
+                if amount > 0:
+                    sender.withdraw(amount)
+                    recipient.deposit(amount)
+                    if self.__transfers.get(sender_account_number) == None:
+                        self.__transfers[sender_account_number] = []
+                    self.__transfers[sender_account_number].append(recipient_account_number)
+                    print(f"Account with account number {sender_account_number} has transfered {amount} ETB to account with account number {recipient_account_number}")
+                else:
+                    print("Amount must be positive")
+            else:
+                print(f"{sender_account_number} or {recipient_account_number} account number does not exist")
+        else:
+            print("Sender and Recipient account numbers are the same!")
+
+    def has_sent_to(self, sender_account_number):
+        transfer_list = self.__transfers.get(sender_account_number)
+        if transfer_list != None:
+            def bfs(transfers, start):
+                visited = set()
+                order = []
+                queue = deque([start])
+                while queue:
+                    vertex = queue.popleft()
+                    if vertex not in visited:
+                        visited.add(vertex)
+                        order.append(vertex)
+                        for neighbor in transfers:
+                            if neighbor not in visited:
+                                queue.append(neighbor)
+                return order[1:]
+
+            return bfs(transfer_list, sender_account_number)
+        else:
+            print(f"Account with account number {sender_account_number} has not transfered to anyone in this branch")
 
 
 
 
-
-
-        
-abebe = AccountFactory.create("Savings", "Abebe", "12345", 2530)
-kebede = AccountFactory.create("Current", "Kebede", "67890", 3400)
-almaz = AccountFactory.create("Savings", "Almaz", "13579", 3500, 0.1)
-lemlem = AccountFactory.create("Current", "Lemlem", "68024", 2470, 0, 1500)
 
 
 account_registry = AccountRegistry()
-account_registry.add(abebe)
-account_registry.add(kebede)
-account_registry.add(almaz)
-account_registry.add(lemlem)
-
-accounts = account_registry.list_all()
-for account in accounts:
-    print(account.owner)
-
-
-
-
-abebe_account = account_registry.find("12345") if account_registry.find("12345") != None else ValueError("Account does not exist")
-abebe_account.statement()
-abebe_account.subscribe(SMSAlertService())
-abebe_account.subscribe(AuditLogService())
-
-abebe_account.deposite(250)
-account_registry.push_transaction("12345", "Deposit", 250)
-abebe_account.statement()
-
-abebe_account.deposite(100)
-account_registry.push_transaction("12345", "Deposit", 100)
-abebe_account.statement()
-
-abebe_account.deposite(1400)
-account_registry.push_transaction("12345","Deposit", 1400)
-abebe_account.statement()
-
-abebe_account.withdraw(350)
-account_registry.push_transaction("12345","Withdraw", 350)
-abebe_account.statement()
-
-abebe_account.withdraw(500)
-account_registry.push_transaction("12345","Withdraw", 500)
-abebe_account.statement()
-account_registry.total_transactions("12345")
-
-account_registry.undo_last("12345")
-abebe_account.statement()
-account_registry.total_transactions("12345")
-
-account_registry.undo_last("12345")
-abebe_account.statement()
-account_registry.total_transactions("12345")
+account_registry.add(AccountFactory.create("Savings", "Abebe", "12345", 2530))
+account_registry.add(AccountFactory.create("Current", "Kebede", "67890", 3400))
+account_registry.add(AccountFactory.create("Savings", "Almaz", "13579", 3500, 0.1))
+account_registry.add(AccountFactory.create("Current", "Lemlem", "68024", 2470, 0, 1500))
+account_registry.add(AccountFactory.create("Savings", "Abeje", "23456", 2400))
+account_registry.add(AccountFactory.create("Current", "Beletu", "34567", 3200))
+account_registry.add(AccountFactory.create("Savings", "Dawit", "45678", 4100))
+account_registry.add(AccountFactory.create("Current", "Tsedey", "56788", 3100))
+account_registry.add(AccountFactory.create("Savings", "Henok", "98765", 4400))
 
 
 
 
-kebede_account = account_registry.find("67890") if account_registry.find("67890") != None else ValueError("Account does not exist")
-kebede_account.statement()
-kebede_account.subscribe(SMSAlertService())
-kebede_account.subscribe(AuditLogService())
 
-kebede_account.deposite(250)
-account_registry.push_transaction("67890", "Deposit", 250)
-kebede_account.statement()
+bole = Branch("Bole")
+bole.add_account(account_registry,"12345")
 
-kebede_account.deposite(100)
-account_registry.push_transaction("67890", "Deposit", 100)
-kebede_account.statement()
+kaliti = Branch("Kaliti")
+kaliti.add_account(account_registry, "67890")
 
-kebede_account.deposite(1400)
-account_registry.push_transaction("67890","Deposit", 1400)
-kebede_account.statement()
+arada = Branch("Arada")
+arada.add_account(account_registry, "13579")
 
-kebede_account.withdraw(350)
-account_registry.push_transaction("67890","Withdraw", 350)
-kebede_account.statement()
+abadir = Branch("Abadir")
+abadir.add_account(account_registry, "68024")
 
-kebede_account.withdraw(500)
-account_registry.push_transaction("67890","Withdraw", 500)
-kebede_account.statement()
-account_registry.total_transactions("67890")
+gurgura = Branch("Gurgura")
+gurgura.add_account(account_registry, "23456")
 
-account_registry.undo_last("67890")
-kebede_account.statement()
-account_registry.total_transactions("67890")
+addis_ababa = Branch("Addis Ababa")
+addis_ababa.add_account(account_registry, "34567")
+addis_ababa.add_branch(bole)
+addis_ababa.add_branch(kaliti)
+addis_ababa.add_branch(arada)
 
-account_registry.undo_last("67890")
-kebede_account.statement()
-account_registry.total_transactions("67890")
+harar = Branch("Harar")
+harar.add_account(account_registry, "45678")
+harar.add_branch(abadir)
 
-kebede_account.withdraw(6100)
-account_registry.push_transaction("67890","Withdraw", 6100)
-kebede_account.statement()
-account_registry.total_transactions("67890")
+diredawa = Branch("Diredawa")
+diredawa.add_account(account_registry, "56788")
+diredawa.add_branch(gurgura)
 
-account_registry.undo_last("67890")
-kebede_account.statement()
-account_registry.total_transactions("67890")
+head_office = Branch("Head Office")
+head_office.add_account(account_registry, "98765")
+head_office.add_branch(addis_ababa)
+head_office.add_branch(harar)
+head_office.add_branch(diredawa)
 
+print(f"Total balance in {head_office.name} branch is {head_office.total_balance()} ETB")
+print(f"Total balance in {kaliti.name} branch is {kaliti.total_balance()} ETB")
+print(f"Total balance in {harar.name} branch is {harar.total_balance()} ETB")
+print(f"Total balance in {bole.name} branch is {bole.total_balance()} ETB")
 
-almaz_account = account_registry.find("13579") if account_registry.find("13579") != None else ValueError("Account does not exist")
-almaz_account.statement()
-almaz_account.subscribe(SMSAlertService())
-almaz_account.subscribe(AuditLogService())
+account_number = "12345"
 
-almaz_account.deposite(250)
-account_registry.push_transaction("13579", "Deposit", 250)
-almaz_account.statement()
+bole.transfer_to(account_registry, account_number, "67890", 500)
+bole.transfer_to(account_registry, account_number, "13579", 500)
+bole.transfer_to(account_registry, account_number, "34567", 500)
+bole.transfer_to(account_registry, account_number, "34567", 500)
+bole.transfer_to(account_registry, account_number, "56788", 500)
+print(f"Total balance in {bole.name} branch is {bole.total_balance()} ETB")
+print(f"Total balance in {kaliti.name} branch is {kaliti.total_balance()} ETB")
+print(f"Total balance in {head_office.name} branch is {head_office.total_balance()} ETB")
 
-almaz_account.deposite(100)
-account_registry.push_transaction("13579", "Deposit", 100)
-almaz_account.statement()
+print(f"Account with account number {account_number} has sent to these accounts {bole.has_sent_to(account_number)} in Bole branch")
 
-almaz_account.deposite(1230)
-account_registry.push_transaction("13579","Deposit", 1230)
-almaz_account.statement()
+second_account_number = "23456"
 
-almaz_account.withdraw(350)
-account_registry.push_transaction("13579","Withdraw", 350)
-almaz_account.statement()
+gurgura.transfer_to(account_registry, second_account_number, "12345", 130)
+gurgura.transfer_to(account_registry, second_account_number, "23456", 130)
+gurgura.transfer_to(account_registry, second_account_number, "98765", 130)
 
-almaz_account.withdraw(500)
-account_registry.push_transaction("13579","Withdraw", 500)
-almaz_account.statement()
-account_registry.total_transactions("13579")
-
-account_registry.undo_last("13579")
-almaz_account.statement()
-account_registry.total_transactions("13579")
-
-account_registry.undo_last("13579")
-almaz_account.statement()
-account_registry.total_transactions("13579")
-
-
-lemlem_account = account_registry.find("68024") if account_registry.find("68024") != None else ValueError("Account does not exist")
-lemlem_account.statement()
-lemlem_account.subscribe(SMSAlertService())
-lemlem_account.subscribe(AuditLogService())
-
-lemlem_account.deposite(250)
-account_registry.push_transaction("68024", "Deposit", 250)
-lemlem_account.statement()
-
-lemlem_account.deposite(100)
-account_registry.push_transaction("68024", "Deposit", 100)
-lemlem_account.statement()
-
-lemlem_account.deposite(1400)
-account_registry.push_transaction("68024","Deposit", 1400)
-lemlem_account.statement()
-
-lemlem_account.withdraw(350)
-account_registry.push_transaction("68024","Withdraw", 350)
-lemlem_account.statement()
-
-lemlem_account.withdraw(500)
-account_registry.push_transaction("68024","Withdraw", 500)
-lemlem_account.statement()
-account_registry.total_transactions("68024")
-
-account_registry.undo_last("68024")
-lemlem_account.statement()
-account_registry.total_transactions("68024")
-
-account_registry.undo_last("68024")
-lemlem_account.statement()
-account_registry.total_transactions("68024")
-
-lemlem_account.withdraw(5720)
-account_registry.push_transaction("68024","Withdraw", 5720)
-lemlem_account.statement()
-account_registry.total_transactions("68024")
-
-account_registry.undo_last("68024")
-lemlem_account.statement()
-account_registry.total_transactions("68024")
-
-list_of_accounts = account_registry.top_by_balance(3)
-
-for account in list_of_accounts:
-    print(f"{account.owner}: {account.balance}")
-
-account_number1 = "68024"
-account_number2 = "17745"
-possible_account = account_registry.find_by_number(account_number1)
-print(f"Account with account number {possible_account.account_number} exists in the registry") if possible_account != None else print(f"Account with account number {account_number2} does not exist in the registry")
-
-possible_account = account_registry.find_by_number(account_number2)
-print(f"Account with account number {possible_account.account_number} exists in the registry") if possible_account != None else print(f"Account with account number {account_number2} does not exist in the registry")
-
-account_registry.total_transactions("68024")
-account_registry.total_transactions("13579")
-
-
+print(f"Account with account number {second_account_number} has sent to these accounts {gurgura.has_sent_to(second_account_number)} in Gurgura branch")
 
 
 
